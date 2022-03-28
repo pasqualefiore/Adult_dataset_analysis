@@ -320,3 +320,52 @@ def adaboost(X_train, Y_train, X_test, Y_test,X_val = [], Y_val =[], random = 42
         return RF, confusion
     else:
         return RF
+    
+def Ada_pipeline(filepath, target, verbose = 1):
+    """ Funzione che restituisce la pipeline dell'intero iter per la relizzazione 
+    dell'Adaboost. Le fasi riassunte nella funzione sono le seguenti: 
+    
+    * 1: Divisione della X dal dataset
+    * 2: Trasformazioni opportune delle variabili 
+    * 3: Suddivisione del dataset in test set e train set
+    * 4: Utilizzo del modello Adaboost con iperparametri ottimizzati
+    -------------------------------------
+    Parametri:
+    filepath: filepath del dataset
+    target: stringa della variabile target
+    verbose: valore opzionale. Se verbose = 1 mostra tutti i passaggi effettuati
+    ---------------------------------------
+    Output
+    modello Adaboost
+    matrice di confusione 
+    ----------------------------------------"""
+    
+    dataset = pd.read_csv(filepath).drop("Unnamed: 0", axis = 1)
+    X,Y = divisione_x_y(dataset, target) 
+    if verbose == 1: 
+        print("Il primo passaggio prevede la suddivisione del dataset in X e Y")
+        print("-" *80)
+    categories = [[' No-Diploma',' HS-grad', ' Some-college',' Assoc-voc',
+    ' Assoc-acdm',' Prof-school',' Bachelors',' Masters',' Doctorate']]
+    X_1,ct = trasformazioni_variabili(X, ["Tipo_lavoro","Stato_sociale","Etnia","Genere", 
+                                          "Paese_Nativo_cat"],["Istruzione"], categories, 
+                                          [], verbose = 0)
+    if verbose ==1: 
+        print("""Il secondo passaggio prevede la trasformazione opportune delle diverse variabili.
+In particolare\n{}""".format(ct))
+        print("-"*80)
+    X_train_1, X_test_1,Y_train_1,Y_test_1 = train_test_val(X_1,Y, validation= False, test_size = 0.40)
+    Y_train_1,Y_test_1,le = label_encoder_test(Y_train_1,Y_test_1)
+    
+    if verbose == 1: 
+        print("""Il terzo passaggio prevede la suddivisione del dataset in train e test.""")
+        print("-"*80)
+        print("""Dopo la suddivisione, utilizziamo l'Adaboost con gli iperparametri ottimizzati 
+precedentemente attraverso una GridSearch cross validata""")
+        print("-"*80)
+        
+    Ada_ottimizzato, confusion_matrix_ada = adaboost(X_train_1, Y_train_1, X_test_1, Y_test_1,
+                                        base_estimator = DecisionTreeClassifier(criterion = "entropy",
+                                        max_depth = 1),learning_rate= 1, n_estimators=80)
+    
+    return Ada_ottimizzato, confusion_matrix_ada
