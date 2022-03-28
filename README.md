@@ -15,3 +15,4 @@ dati mancanti (sta all'utilizzatore scegliere il processo che più gli aggrada)
 
 04.Modello Random Forest Adaboost: modellazione del problema utilizzando i classificatori Random Forest e
 Adaboost
+05.Pipeline del modello Adaboost con iperparametri ottimizzati. 
